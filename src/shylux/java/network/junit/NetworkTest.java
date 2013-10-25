@@ -101,7 +101,7 @@ public class NetworkTest {
 		manager.addNetworkListener(scp);
 		Connection conn = null;
 		try {
-			conn = manager.connect("localhost");
+			conn = ConnectionManager.connect("localhost");
 		} catch (IOException e) {e.printStackTrace();}
 		
 		// wait for the connection
