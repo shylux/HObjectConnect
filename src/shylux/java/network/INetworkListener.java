@@ -10,5 +10,7 @@ public interface INetworkListener {
 	 * A new connection has been established.
 	 * @param pCon the new connection
 	 */
-	public void onConnection(Connection pCon);
+	public void onConnection(TCPConnection pCon);
+	
+	public void onUDPMessage(UDPMessage pMsg);
 }

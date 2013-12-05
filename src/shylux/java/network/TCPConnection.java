@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author Lukas Knoepfel <shylux@gmail.com>
  *
  */
-public class Connection implements Runnable {
+public class TCPConnection implements Runnable {
 	private Socket socket;
 	
 	/**
@@ -22,9 +23,8 @@ public class Connection implements Runnable {
 	 * Also creates a new thread to listen for new messages.
 	 * @param pSocket socket from which input/output streams are used.
 	 */
-	public Connection(Socket pSocket) {
+	public TCPConnection(Socket pSocket) {
 		socket = pSocket;
-		
 		Thread th = new Thread(this);
 		th.start();
 		
@@ -66,6 +66,22 @@ public class Connection implements Runnable {
 		this.onClose();
 	}
 	
+	
+	/**
+	 * Returns ip address of connected machine.
+	 * @return ip address of connected machine
+	 */
+	public InetAddress getRemoteAddress() {
+		return socket.getInetAddress();
+	}
+	
+	/**
+	 * Returns port number of connected machine.
+	 * @return port number of connected machine
+	 */
+	public int getRemotePort() {
+		return socket.getPort();
+	}
 	
 	private ObjectOutputStream writer;
 	/**
@@ -127,5 +143,13 @@ public class Connection implements Runnable {
 		for (IConnectionListener cl: listener) {
 			cl.onClose();
 		}
+	}
+	
+	/**
+	 * Checks if connection is closed.
+	 * @return true if the socket has been closed
+	 */
+	public boolean isClosed() {
+		return socket.isClosed();
 	}
 }

@@ -2,7 +2,7 @@ package shylux.java.network.example;
 
 import java.io.IOException;
 
-import shylux.java.network.Connection;
+import shylux.java.network.TCPConnection;
 import shylux.java.network.ConnectionManager;
 import shylux.java.network.IConnectionListener;
 
@@ -26,7 +26,7 @@ import shylux.java.network.IConnectionListener;
  *
  */
 public class AliceMain implements IConnectionListener {
-	Connection connToBob;
+	TCPConnection connToBob;
 	
 	public static void main(String[] args) {
 		new Bob();
@@ -41,13 +41,13 @@ public class AliceMain implements IConnectionListener {
 			return;
 		}
 		connToBob.addConnectionListener(this);
-		Message msg_hi = new Message("Hi bob. Do you have new keys? Seems like i cant decrypt your messages anymore.", Message.State.OVER);
+		ExampleMessage msg_hi = new ExampleMessage("Hi bob. Do you have new keys? Seems like i cant decrypt your messages anymore.", ExampleMessage.State.OVER);
 		connToBob.sendMessage(msg_hi);
 	}
 	
-	private void processMessage(Message pMsg) {
+	private void processMessage(ExampleMessage pMsg) {
 		System.out.println("Alice got Message from Bob: "+pMsg.getMessage());
-		Message msg_bye = new Message("Why am i even talking to you?", Message.State.OUT);
+		ExampleMessage msg_bye = new ExampleMessage("Why am i even talking to you?", ExampleMessage.State.OUT);
 		connToBob.sendMessage(msg_bye);
 		connToBob.close();
 	}
@@ -55,8 +55,8 @@ public class AliceMain implements IConnectionListener {
 
 	@Override
 	public void onMessage(Object o) {
-		if (o instanceof Message) {
-			Message msg = (Message) o;
+		if (o instanceof ExampleMessage) {
+			ExampleMessage msg = (ExampleMessage) o;
 			processMessage(msg);
 		}
 	}

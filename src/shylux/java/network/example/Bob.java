@@ -1,25 +1,26 @@
 package shylux.java.network.example;
 
-import shylux.java.network.Connection;
+import shylux.java.network.TCPConnection;
 import shylux.java.network.ConnectionManager;
 import shylux.java.network.IConnectionListener;
 import shylux.java.network.INetworkListener;
-import shylux.java.network.example.Message.State;
+import shylux.java.network.UDPMessage;
+import shylux.java.network.example.ExampleMessage.State;
 
 public class Bob implements IConnectionListener, INetworkListener {
 	ConnectionManager manager;
-	Connection connToAlice;
+	TCPConnection connToAlice;
 	
 	public Bob() {
 		manager = new ConnectionManager();
 		manager.addNetworkListener(this);
 	}
 	
-	private void processMessage(Message pMsg) {
+	private void processMessage(ExampleMessage pMsg) {
 		System.out.println("Bob got Message from Alice: "+pMsg.getMessage());
 		switch (pMsg.getState()) {
 		case OVER:
-			Message msg_reply = new Message("Yea i created new ones using this algorithm promoted by NIST, Dual_EC_DRBG!", State.OVER);
+			ExampleMessage msg_reply = new ExampleMessage("Yea i created new ones using this algorithm promoted by NIST, Dual_EC_DRBG!", State.OVER);
 			connToAlice.sendMessage(msg_reply);
 			break;
 		default:
@@ -28,15 +29,15 @@ public class Bob implements IConnectionListener, INetworkListener {
 	}
 
 	@Override
-	public void onConnection(Connection pCon) {
+	public void onConnection(TCPConnection pCon) {
 		connToAlice = pCon;
 		connToAlice.addConnectionListener(this);
 	}
 
 	@Override
 	public void onMessage(Object o) {
-		if (o instanceof Message) {
-			Message msg = (Message) o;
+		if (o instanceof ExampleMessage) {
+			ExampleMessage msg = (ExampleMessage) o;
 			processMessage(msg);
 		}
 	}
@@ -44,6 +45,12 @@ public class Bob implements IConnectionListener, INetworkListener {
 	@Override
 	public void onClose() {
 		manager.stop();
+	}
+
+	@Override
+	public void onUDPMessage(UDPMessage pMsg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -12,10 +12,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import shylux.java.network.Connection;
+import shylux.java.network.TCPConnection;
 import shylux.java.network.ConnectionManager;
 import shylux.java.network.IConnectionListener;
 import shylux.java.network.INetworkListener;
+import shylux.java.network.UDPMessage;
 
 public class NetworkTest {
 	ConnectionManager manager;
@@ -31,22 +32,34 @@ public class NetworkTest {
 	}
 	
 	private class SingleConnectionProvider implements INetworkListener {
-		public Connection conn;
+		public TCPConnection conn;
 
-		public void onConnection(Connection pCon) {
+		public void onConnection(TCPConnection pCon) {
 			System.out.println("onConnection");
 			conn = pCon;
+		}
+
+		@Override
+		public void onUDPMessage(UDPMessage pMsg) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	private class ConnectionCounter implements INetworkListener {
 		int connectionCounter = 0;
 		
-		public void onConnection(Connection pCon) {
+		public void onConnection(TCPConnection pCon) {
 			connectionCounter++;
 		}
 		
 		public int getCount() {
 			return connectionCounter;
+		}
+
+		@Override
+		public void onUDPMessage(UDPMessage pMsg) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	private class MessageRegister implements IConnectionListener {
@@ -99,7 +112,7 @@ public class NetworkTest {
 	public void testMessageSendOverManager() {
 		SingleConnectionProvider scp = new SingleConnectionProvider();
 		manager.addNetworkListener(scp);
-		Connection conn = null;
+		TCPConnection conn = null;
 		try {
 			conn = ConnectionManager.connect("localhost");
 		} catch (IOException e) {e.printStackTrace();}
