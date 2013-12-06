@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.InterfaceAddress;
@@ -27,11 +28,16 @@ public class ConnectionManager {
 	public static final int DEFAULT_PORT = 8228;
 	public static final int MAX_UDP_MSG_SIZE = 500;
 	public static Logger LOG = Logger.getLogger(ConnectionManager.class.getName());
+	public static ConsoleHandler STD_LOG_HANDLER = new ConsoleHandler();
 	
 	public static final UUID ID = UUID.randomUUID();
 	
 	static {
-		LOG.setLevel(Level.ALL);
+		LOG.setLevel(Level.INFO);
+		LOG.setUseParentHandlers(false);
+		// set default level to all 
+		LOG.addHandler(STD_LOG_HANDLER);
+		STD_LOG_HANDLER.setLevel(Level.ALL);
 	}
 	
 	
@@ -66,7 +72,7 @@ public class ConnectionManager {
 				if (!e.getMessage().equals("socket closed"))
 					LOG.warning(e.getMessage());;
 			} finally {
-				LOG.info("Shutting down...");
+				LOG.info("Shutting down TCP Server...");
 				try {
 					serverSocket.close();
 				} catch (IOException e) {}
@@ -89,8 +95,7 @@ public class ConnectionManager {
 					// ignore packets from yourself
 					String message = new String(receivePacket.getData()).trim();
 
-					System.out.println("got broadcast msg:"+message);
-					System.out.println("from: "+receivePacket.getSocketAddress());
+					LOG.fine("Got udp message: "+message+", from: "+receivePacket.getSocketAddress());
 					if (message.startsWith(ID.toString())) continue;
 					
 					UDPMessage msg = new UDPMessage(receivePacket);
@@ -100,10 +105,12 @@ public class ConnectionManager {
 					}
 				}
 			} catch (SocketException e) {
-				e.printStackTrace();
+				// normal close
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				LOG.info("Shutting down UDP Server...");
+				datagramSocket.close();
 			}
 
 		}
@@ -205,7 +212,7 @@ public class ConnectionManager {
 				for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
 					InetAddress broadcast = interfaceAddress.getBroadcast();
 					if (broadcast == null) continue;
-					System.out.println("sending broadcast: "+broadcast);
+					LOG.fine("sending broadcast: "+broadcast);
 					DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, DEFAULT_PORT);
 					socket.send(sendPacket);
 				}

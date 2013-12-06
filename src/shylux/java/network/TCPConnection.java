@@ -1,11 +1,13 @@
 package shylux.java.network;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,21 +51,32 @@ public class TCPConnection implements Runnable {
 
 		Object inData;
 		try {
-			while ((inData = reader.readObject()) != null) {
+			while (true) {
+				try {
+				inData = reader.readObject();
+				} catch (EOFException e) {
+					// ok, can happen. carry on
+					continue;
+				} catch (ClassNotFoundException e) {
+					ConnectionManager.LOG.warning("Remote sent some gibberish: "+e.getMessage());
+					continue;
+				}
+
+				if (inData == null) break;
+
 				ConnectionManager.LOG.finer(String.format("Received message from %s:%s (%s)", socket.getInetAddress().toString(), socket.getPort(), inData.toString()));
 				// notify listener
 				for (IConnectionListener cl: listener) {
 					cl.onMessage(inData);
 				}
 			}
-				
+		} catch (SocketException e) {
+			// normal close
 		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
 			this.onClose();
-			return;
-		} catch (ClassNotFoundException e) {
-			ConnectionManager.LOG.warning("Remote sent some gibberish: "+e.getMessage());
 		}
-		this.onClose();
 	}
 	
 	
